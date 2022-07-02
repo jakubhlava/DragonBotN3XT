@@ -1,4 +1,6 @@
 import os
+from sys import stderr
+
 from dragonbot import installdir, bot, guild_ids
 from dragonbot.loader import Plugin
 
@@ -60,11 +62,12 @@ async def load(plugin_name: str):
     plugin = get_plugin(plugin_name)
     if not plugin.loaded:
         try:
-            bot.load_extension(plugin.load_str)
+            bot.load_extension(plugin.load_str())
             for guild_id in guild_ids:
                 guild = bot.get_guild(guild_id)
                 await guild.sync_application_commands()
-        except AttributeError:
+        except AttributeError as e:
+            print(e, file=stderr)
             return False
     plugin.loaded = True
     return True
@@ -74,8 +77,9 @@ def unload(plugin_name: str):
     plugin = get_plugin(plugin_name)
     if plugin.loaded:
         try:
-            bot.unload_extension(plugin.load_str)
-        except AttributeError:
+            bot.unload_extension(plugin.load_str())
+        except AttributeError as e:
+            print(e, file=stderr)
             return False
     plugin.loaded = False
     return True
@@ -85,11 +89,12 @@ async def reload(plugin_name: str):
     plugin = get_plugin(plugin_name)
     if plugin.loaded:
         try:
-            bot.reload_extension(plugin.load_str)
+            bot.reload_extension(plugin.load_str())
             for guild_id in guild_ids:
                 guild = bot.get_guild(guild_id)
                 await guild.sync_application_commands()
-        except AttributeError:
+        except AttributeError as e:
+            print(e, file=stderr)
             return False
     plugin.loaded = True
     return True
